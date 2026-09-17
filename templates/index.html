@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><title>US Shop POS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{font-family:Arial;padding:15px;background:#f0f2f5}.card{background:white;padding:15px;border-radius:12px;margin-bottom:15px}input,select,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:8px}button{background:#000;color:white;font-weight:bold}</style>
+</head>
+<body>
+<h2>🇺🇸 US Shop POS $ DOLLARS</h2>
+<div class="card"><b>Today: ${{ "%.2f"|format(today_sales) }} | Profit: ${{ "%.2f"|format(profit) }}</b></div>
+<div class="card"><h3>Add Product</h3>
+<form method="POST" action="/add_product">
+<input name="name" placeholder="Product Name" required>
+<input name="barcode" placeholder="Barcode">
+<input name="cost" type="number" step="0.01" placeholder="Cost $" required>
+<input name="price" type="number" step="0.01" placeholder="Sell Price $" required>
+<input name="qty" type="number" placeholder="Qty" required>
+<button>Add</button></form></div>
+<div class="card"><h3>Sell</h3>
+<form method="POST" action="/sell">
+<select name="product">{% for p in products %}<option value="{{p.name}}">{{p.name}} ${{p.price}} ({{p.qty}} left)</option>{% endfor %}</select>
+<input name="qty" type="number" value="1" required><button>Sell</button></form></div>
+<div class="card"><h3>Customer Tab</h3>
+<form method="POST" action="/add_debt">
+<input name="customer" placeholder="Customer" required>
+<input name="amount" type="number" step="0.01" placeholder="Amount $" required>
+<button>Add Tab</button></form>
+{% for d in debts %}<p>{{d.customer}} owes ${{d.amount}}</p>{% endfor %}</div>
+<div class="card"><h3>Stock</h3>{% for p in products %}<p>{{p.name}} | {{p.qty}} | ${{p.price}}</p>{% endfor %}</div>
+</body></html>

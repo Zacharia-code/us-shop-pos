@@ -1,0 +1,27 @@
+{
+  "products": [
+    {
+      "name": "coca cola",
+      "cost": 1.0,
+      "price": 2.5,
+      "qty": 19,
+      "barcode": ""
+    }
+  ],
+  "sales": [
+    {
+      "product": "coca cola",
+      "qty": 1,
+      "total": 2.5,
+      "profit": 1.5,
+      "date": "2026-09-02T14:15:52.303274"
+    }
+  ],
+  "debts": [
+    {
+      "customer": "john",
+      "amount": 10.0,
+      "date": "2026-09-02T14:16:31.965948"
+    }
+  ]
+}
