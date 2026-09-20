@@ -61,7 +61,7 @@ def sell():
                 last_sale = {"product":name,"qty":qty,"price":p['price'],"total":total}
         save()
     except: pass
-    return redirect('/receipt')
+    return redirect('/?currency=GHS&sold=1')
 
 @app.route('/receipt')
 def receipt():
