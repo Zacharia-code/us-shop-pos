@@ -2,15 +2,21 @@
 <html>
 <head>
 <title>Receipt - GHANA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{font-family:monospace; max-width:300px; margin:auto; padding:20px}
+body{font-family:monospace; max-width:320px; margin:auto; padding:15px; background:#f5f5f5}
+.card{background:white; padding:20px; border-radius:10px}
 .center{text-align:center}
 .line{border-top:1px dashed #000; margin:10px 0}
-button{background:#25D366; color:white; border:none; padding:12px; width:100%; font-size:18px; margin-top:20px}
-@media print{button{display:none}}
+button{border:none; padding:14px; width:100%; font-size:16px; margin-top:10px; border-radius:8px; font-weight:bold; cursor:pointer}
+.btn-print{background:#333; color:white}
+.btn-whatsapp{background:#25D366; color:white}
+.btn-back{background:#eee; color:#333}
+@media print{.no-print{display:none} body{background:white}}
 </style>
 </head>
 <body>
+<div class="card">
 <div class="center">
 <h2>🇬🇭 MY SHOP GHANA</h2>
 <p>Accra, Greater Accra<br>Tel: 0XX XXX XXXX</p>
@@ -26,7 +32,20 @@ button{background:#25D366; color:white; border:none; padding:12px; width:100%; f
 <h3 class="center">TOTAL: GH₵{{ sale.total }}</h3>
 <div class="line"></div>
 <p class="center">Thank you! Akwaaba! 🙏</p>
-<button onclick="window.print()">🖨️ PRINT RECEIPT</button>
-<button onclick="window.location='/?currency=GHS'" style="background:#333">Back to POS</button>
+
+<div class="no-print">
+<button class="btn-print" onclick="window.print()">🖨️ PRINT RECEIPT</button>
+<button class="btn-whatsapp" id="waBtn">📱 SHARE ON WHATSAPP</button>
+<button class="btn-back" onclick="window.location='/?currency=GHS'">← Back to POS</button>
+</div>
+</div>
+
+<script>
+const sale = {{ sale | tojson }};
+const text = `🧾 *MY SHOP GHANA*%0A📍 Accra%0A----------------%0AItem: ${sale.product}%0AQty: ${sale.qty}%0APrice: GH₵${sale.price}%0A*TOTAL: GH₵${sale.total}*%0A----------------%0AThank you! Akwaaba! 🙏`;
+document.getElementById('waBtn').onclick = function(){
+  window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+</script>
 </body>
 </html>
