@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Receipt - GHANA</title>
+<style>
+body{font-family:monospace; max-width:300px; margin:auto; padding:20px}
+.center{text-align:center}
+.line{border-top:1px dashed #000; margin:10px 0}
+button{background:#25D366; color:white; border:none; padding:12px; width:100%; font-size:18px; margin-top:20px}
+@media print{button{display:none}}
+</style>
+</head>
+<body>
+<div class="center">
+<h2>🇬🇭 MY SHOP GHANA</h2>
+<p>Accra, Greater Accra<br>Tel: 0XX XXX XXXX</p>
+<div class="line"></div>
+<p>{{ date }}</p>
+</div>
+<div class="line"></div>
+<p><b>Item:</b> {{ sale.product }}<br>
+<b>Qty:</b> {{ sale.qty }}<br>
+<b>Price:</b> GH₵{{ sale.price }}<br>
+<b>Total:</b> GH₵{{ sale.total }}</p>
+<div class="line"></div>
+<h3 class="center">TOTAL: GH₵{{ sale.total }}</h3>
+<div class="line"></div>
+<p class="center">Thank you! Akwaaba! 🙏</p>
+<button onclick="window.print()">🖨️ PRINT RECEIPT</button>
+<button onclick="window.location='/?currency=GHS'" style="background:#333">Back to POS</button>
+</body>
+</html>
