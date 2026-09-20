@@ -1,14 +1,14 @@
 from flask import Flask, render_template, request, redirect
 import json, os
+from datetime import datetime
 
 app = Flask(__name__)
 
-# SAFE defaults - never crashes
 products = [{"name":"coca cola","barcode":"123","cost":1,"price":2.5,"qty":18}]
 debts = []
-sales = [{"price":2.5,"cost":1,"qty":1}]
+sales = []
+last_sale = {"product":"coca cola","qty":1,"price":2.5,"total":2.5}
 
-# Try load data.json but don't crash if bad
 try:
     if os.path.exists('data.json'):
         with open('data.json') as f:
@@ -17,13 +17,14 @@ try:
                 products = data.get('products', products)
                 debts = data.get('debts', debts)
                 sales = data.get('sales', sales)
+                last_sale = data.get('last_sale', last_sale)
 except:
     pass
 
 def save():
     try:
         with open('data.json', 'w') as f:
-            json.dump({"products":products,"debts":debts,"sales":sales}, f)
+            json.dump({"products":products,"debts":debts,"sales":sales,"last_sale":last_sale}, f)
     except:
         pass
 
@@ -32,20 +33,11 @@ def index():
     try:
         currency = request.args.get('currency', 'GHS')
         symbol = "GH₵" if currency == 'GHS' else "$"
-        today_total = 0
-        profit = 0
-        for s in sales:
-            try:
-                p = float(s.get('price',0))
-                c = float(s.get('cost',0))
-                q = int(s.get('qty',0))
-                today_total += p * q
-                profit += (p-c)*q
-            except:
-                pass
+        today_total = sum(float(s.get('price',0))*int(s.get('qty',0)) for s in sales)
+        profit = sum((float(s.get('price',0))-float(s.get('cost',0)))*int(s.get('qty',0)) for s in sales)
         return render_template('index.html', products=products, debts=debts, today_total=today_total, profit=profit, currency=currency, symbol=symbol)
     except Exception as e:
-        return f"Fixing... {e} - Please reload", 500
+        return f"Reload... {e}", 500
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
@@ -57,16 +49,24 @@ def add_product():
 
 @app.route('/sell', methods=['POST'])
 def sell():
+    global last_sale
     try:
         name = request.form['product']
         qty = int(request.form['qty'])
         for p in products:
             if p['name']==name and p['qty']>=qty:
                 p['qty']-=qty
+                total = p['price']*qty
                 sales.append({"price":p['price'],"cost":p['cost'],"qty":qty})
+                last_sale = {"product":name,"qty":qty,"price":p['price'],"total":total}
         save()
     except: pass
-    return redirect("/?currency=GHS")
+    return redirect('/receipt')
+
+@app.route('/receipt')
+def receipt():
+    date = datetime.now().strftime("%d/%m/%Y %H:%M")
+    return render_template('receipt.html', sale=last_sale, date=date)
 
 @app.route('/add_debt', methods=['POST'])
 def add_debt():
