@@ -3,96 +3,75 @@ from datetime import datetime
 import json, os
 
 app = Flask(__name__)
-
 DATA_FILE = "/tmp/data.json"
-products = []
-sales = []
-debts = []
-last_sale = None
+products, sales, debts, last_sale = [], [], [], None
+receipt_counter = 1
 
 def load():
-    global products, sales, debts, last_sale
+    global products, sales, receipt_counter, last_sale
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE,'r') as f:
-                d = json.load(f)
-                products = d.get('products',[])
-                sales = d.get('sales',[])
-                debts = d.get('debts',[])
-                last_sale = d.get('last_sale')
-        except:
-            pass
+                d=json.load(f)
+                products=d.get('products',[]); sales=d.get('sales',[]); last_sale=d.get('last_sale'); receipt_counter=d.get('counter',1)
+        except: pass
 
 def save():
     try:
         with open(DATA_FILE,'w') as f:
-            json.dump({'products':products,'sales':sales,'debts':debts,'last_sale':last_sale}, f)
-    except:
-        pass
+            json.dump({'products':products,'sales':sales,'last_sale':last_sale,'counter':receipt_counter}, f)
+    except: pass
 
 load()
 
 @app.route('/')
 def index():
-    currency = request.args.get('currency','GHS')
-    symbol = "GH₵" if currency == "GHS" else "$"
-    today_total = sum(s['price']*s['qty'] for s in sales)
-    profit = sum((s['price']-s['cost'])*s['qty'] for s in sales)
-    return render_template('index.html', products=products, sales=sales, currency=currency, symbol=symbol, today_total=today_total, profit=profit)
+    currency = request.args.get('currency','USD')
+    symbol = "GH₵" if currency=="GHS" else "$"
+    today_total = sum(s['total'] for s in sales)
+    profit = sum(s['profit'] for s in sales)
+    return render_template('index.html', products=products, currency=currency, symbol=symbol, today_total=today_total, profit=profit, last_sale=last_sale)
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
-    global products
-    try:
-        currency = request.form.get('currency','GHS')
-        products.append({
-            "name": request.form['name'],
-            "barcode": request.form.get('barcode',''),
-            "cost": float(request.form['cost']),
-            "price": float(request.form['price']),
-            "qty": int(request.form['qty'])
-        })
-        save()
-        return redirect(f"/?currency={currency}")
-    except:
-        pass
-    return redirect("/?currency=GHS")
+    cur = request.form.get('currency','USD')
+    products.append({
+        "name": request.form['name'],
+        "cost": float(request.form['cost']),
+        "price": float(request.form['price']),
+        "qty": int(request.form['qty'])
+    })
+    save()
+    return redirect(f"/?currency={cur}")
 
 @app.route('/sell', methods=['POST'])
 def sell():
-    global last_sale
-    currency = request.form.get('currency','GHS')
-    try:
-        name = request.form.get('product') or request.form.get('product_id')
-        qty = int(request.form['qty'])
-        for p in products:
-            if p['name'] == name and p['qty'] >= qty:
-                p['qty'] -= qty
-                total = p['price'] * qty
-                sales.append({"price": p['price'], "cost": p['cost'], "qty": qty})
-                last_sale = {"product": name, "qty": qty, "price": p['price'], "total": total}
-                break
-        save()
-    except Exception as e:
-        print(e)
-    return redirect(f"/?currency={currency}&sold=1")
+    global last_sale, receipt_counter
+    cur = request.form.get('currency','USD')
+    name = request.form.get('product')
+    qty = int(request.form.get('qty',1))
+    for p in products:
+        if p['name']==name and p['qty']>=qty:
+            p['qty']-=qty
+            total = p['price']*qty
+            prof = (p['price']-p['cost'])*qty
+            sale = {"product":name,"qty":qty,"price":p['price'],"total":total,"profit":prof,"id":receipt_counter}
+            sales.append(sale)
+            last_sale = sale
+            receipt_counter+=1
+            break
+    save()
+    return redirect(f"/?currency={cur}&sold={last_sale['id'] if last_sale else 1}")
+
+@app.route('/receipt/<int:rid>')
+def receipt(rid):
+    cur = request.args.get('currency','USD')
+    symbol = "GH₵" if cur=="GHS" else "$"
+    date = datetime.now().strftime("%d/%m/%Y %H:%M")
+    sale = next((s for s in sales if s['id']==rid), last_sale)
+    return render_template('receipt.html', sale=sale, date=date, symbol=symbol, currency=cur)
 
 @app.route('/receipt')
-def receipt():
-    currency = request.args.get('currency','GHS')
-    symbol = "GH₵" if currency == "GHS" else "$"
-    date = datetime.now().strftime("%d/%m/%Y %H:%M")
-    return render_template('receipt.html', sale=last_sale, date=date, currency=currency, symbol=symbol)
-
-@app.route('/add_debt', methods=['POST'])
-def add_debt():
-    currency = request.form.get('currency','GHS')
-    try:
-        debts.append({"customer": request.form['customer'], "amount": float(request.form['amount'])})
-        save()
-    except:
-        pass
-    return redirect(f"/?currency={currency}")
-
-if __name__ == '__main__':
-    app.run()
+def receipt_latest():
+    cur = request.args.get('currency','USD')
+    return redirect(f"/receipt/{last_sale['id']}?currency={cur}" if last_sale else f"/?currency={cur}")
