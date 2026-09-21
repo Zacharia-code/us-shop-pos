@@ -51,10 +51,16 @@ Sale Done! Receipt #{{ request.args.get('sold') }}
 </form>
 </div>
 
-<div class="card">
-<h3>💰 Sell</h3>
 <form method="POST" action="/sell">
+<input type="hidden" name="currency" value="{{currency}}">
 <select name="product">
+{% for p in products %}
+<option value="{{p.name}}">{{p.name}} - {{symbol}}{{p.price}} ({{p.qty}} left)</option>
+{% endfor %}
+</select>
+<input name="qty" type="number" value="1" min="1" required>
+<button class="sell-btn" type="submit">Sell Now {{symbol}}</button>
+</form>
 {% for p in products %}
 <option value="{{p.name}}">{{p.name}} - {{symbol}}{{p.price}} ({{p.qty}} left)</option>
 </select>
