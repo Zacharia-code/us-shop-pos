@@ -1,51 +1,19 @@
 <!DOCTYPE html>
-<html>
-<head>
-<title>Receipt - GHANA</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:monospace; max-width:320px; margin:auto; padding:15px; background:#f5f5f5}
-.card{background:white; padding:20px; border-radius:10px}
-.center{text-align:center}
-.line{border-top:1px dashed #000; margin:10px 0}
-button{border:none; padding:14px; width:100%; font-size:16px; margin-top:10px; border-radius:8px; font-weight:bold; cursor:pointer}
-.btn-print{background:#333; color:white}
-.btn-whatsapp{background:#25D366; color:white}
-.btn-back{background:#eee; color:#333}
-@media print{.no-print{display:none} body{background:white}}
-</style>
-</head>
-<body>
-<div class="card">
-<div class="center">
-<h2>🇬🇭 MY SHOP GHANA</h2>
-<p>Kumasi<br>Tel: 0XX XXX XXXX</p>
+body{font-family:monospace;padding:20px;max-width:400px;margin:auto;background:#fff}
+.logo{font-size:40px;text-align:center}
+h2{text-align:center;margin:5px}
+.line{border-top:2px dashed #000;margin:10px 0}
+@media print{button{display:none}}
+</style></head><body>
+<div class="logo">🛍️</div>
+<h2>{{shop_name}}</h2>
+<p style="text-align:center">RECEIPT #{{sale.id}}<br>{{date}}<br>Currency: {{currency}}</p>
 <div class="line"></div>
-<p>{{ date }}</p>
-</div>
+<p>Item: {{sale.product}}<br>Qty: {{sale.qty}} x {{symbol}}{{sale.price}}<br><b>Total: {{symbol}}{{sale.total}}</b><br>Profit: {{symbol}}{{sale.profit}}</p>
 <div class="line"></div>
-<p><b>Item:</b> {{ sale.product }}<br>
-<b>Qty:</b> {{ sale.qty }}<br>
-<b>Price:</b> GH₵{{ sale.price }}<br>
-<b>Total:</b> GH₵{{ sale.total }}</p>
-<div class="line"></div>
-<h3 class="center">TOTAL: GH₵{{ sale.total }}</h3>
-<div class="line"></div>
-<p class="center">Thank you! Akwaaba! 🙏</p>
-
-<div class="no-print">
-<button class="btn-print" onclick="window.print()">🖨️ PRINT RECEIPT</button>
-<button class="btn-whatsapp" id="waBtn">📱 SHARE ON WHATSAPP</button>
-<button class="btn-back" onclick="window.location='/?currency=GHS'">← Back to POS</button>
-</div>
-</div>
-
-<script>
-const sale = {{ sale | tojson }};
-const text = `🧾 *MY SHOP GHANA*%0A📍 Accra%0A----------------%0AItem: ${sale.product}%0AQty: ${sale.qty}%0APrice: GH₵${sale.price}%0A*TOTAL: GH₵${sale.total}*%0A----------------%0AThank you! Akwaaba! 🙏`;
-document.getElementById('waBtn').onclick = function(){
-  window.open(`https://wa.me/?text=${text}`, '_blank');
-}
-</script>
-</body>
-</html>
+<p style="text-align:center">Thank You!<br>Come Again</p>
+<button onclick="window.print()" style="width:100%;padding:15px;background:#000;color:#fff;border:none;border-radius:8px;margin-top:20px">🖨️ Print Receipt</button>
+<a href="/?currency={{currency}}" style="display:block;text-align:center;margin-top:10px;color:#000">← Back to Shop</a>
+</body></html>
